@@ -1,0 +1,51 @@
+// {
+//   // Use IntelliSense to learn about possible attributes.
+//   // Hover to view descriptions of existing attributes.
+//   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+//   "version": "0.2.0",
+//   "configurations": [
+//     {
+//       "type": "node",
+//       "request": "launch",
+//       "name": "Launch Program",
+//       "program": "${workspaceFolder}\\index.js",
+//       "args": [
+//         "--root",
+//         "/abi",
+//         "--port",
+//         "8181",
+//         "--service-name",
+//         "Magaya_CS_Default",
+//         "--network-id",
+//         "22251",
+//         "--connection-string=192.168.42.18:6111"
+//       ]
+//     }
+//   ]
+// }
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest Tests",
+            "program": "${workspaceRoot}\\node_modules\\jest\\bin\\jest.js",
+            "args": ["-i"],
+            "internalConsoleOptions": "openOnSessionStart",
+            "outFiles": ["${workspaceRoot}/dist/**/*"],
+            "envFile": "${workspaceRoot}/.env"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "program": "${workspaceFolder}\\index.js",
+            "args": [
+                "--root","/ai-document","--port","8100","--service-name","Magaya_CS_Default",
+                "--network-id","36644","--connection-string=ANGEL-LEGION:6110","--gateway"
+            ]
+        }
+    ]
+}

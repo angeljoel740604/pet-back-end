@@ -1,0 +1,22 @@
+{
+    "extends": [
+      "airbnb-base",
+      "plugin:prettier/recommended"
+    ],
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es6": true,
+        "jest": true,
+        "node": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 8
+    },
+    "plugins": ["prettier"],
+    "parser": "babel-eslint",
+    "rules": {
+      "prettier/prettier": "error",
+      "curly":[2, "all"]
+    }
+  }

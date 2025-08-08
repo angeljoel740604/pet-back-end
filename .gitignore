@@ -1,0 +1,10 @@
+node_modules/
+extensions-data/
+extension.config.json
+src/static
+static
+kendo-ui-license.txt
+.vscode/settings.json
+.env
+error.log
+combined.log
