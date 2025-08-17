@@ -8,3 +8,4 @@ kendo-ui-license.txt
 .env
 error.log
 combined.log
+*.md
