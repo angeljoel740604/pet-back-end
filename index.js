@@ -1,35 +1,25 @@
-// helper package for parsing command arguments.
-const io = require('socket.io');
-
 const program = require('commander');
-const packageJson = require('./package.json');
-// const extConfigJson = require('./extension.config.json'); //trabajar local
-// const extConfigJson = require('../../../extension.config.json');
-const express = require('express');
-
-const fileUpload = require('express-fileupload');
-
-const app = express();
-
 const cors = require('cors');
-
-// helper package to get the body of requests
-const bodyParser = require('body-parser');
-// require the config helper.
-
+const socketIo = require('socket.io');
+const express = require('express');
+const path = require('path');
 const sockets = require('@magaya/socket-tunnel-node');
 
-// helper for paths
-const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, './.env') });
+
+const io = require('socket.io');
+const fileUpload = require('express-fileupload');
+const app = express();
+const bodyParser = require('body-parser');
+
+
 // helper for filesystem.
-const fs = require('fs');
 
 const hyperionMiddleware = require('@magaya/hyperion-express-middleware');
 const extensionCheckUpdates = require('@magaya/extension-check-updates');
+const packageJson = require('./package.json');
 
-const connInitEventHandler = require('./src/setup/wf-events-handler');
-
+const extension = { company: 'magaya', name: 'ai-document' };
 program
     .version(packageJson.version)
     .option('-p, --port <n>', 'running port', parseInt)
@@ -41,8 +31,11 @@ program
     .option('--no-daemon', 'pm2 no daemon option')
     .parse(process.argv);
 
-const extension = { company: 'magaya', name: 'ai-document' };
+
 const config = require('@magaya/hyperion-extension-api-key').getApiKeyConfig(extension, program.networkId);
+// const connInitEventHandler = require("./src/setup/wf-events-handler");
+
+
 
 const logger = require('./src/logger');
 
@@ -55,10 +48,10 @@ if (!program.port) {
 }
 
 const extensionCheckUpdatesMiddleware = extensionCheckUpdates.middleware(extension, program.networkId);
-const extensionCheckUpdatesRouter = extensionCheckUpdates.router;
+// const extensionCheckUpdatesRouter = extensionCheckUpdates.router;
 
 const middleware = hyperionMiddleware.middleware(process.argv, config);
-const hyperion = hyperionMiddleware.hyperion(process.argv, config);
+// const hyperion = hyperionMiddleware.hyperion(process.argv, config);
 
 const contextInitMiddleware = require('./src/middlewares/context-init.middleware');
 const exceptionMiddleware = require('./src/middlewares/exceptions.middleware');
@@ -74,7 +67,7 @@ app.use(cors({ origin: '*', optionsSuccessStatus: 200 }));
 
 app.use(fileUpload());
 
-connInitEventHandler();
+// connInitEventHandler();
 
 app.use(
     `${program.root}/`,
@@ -93,15 +86,14 @@ const server = require('./src/routes/routes');
 const init = require('./src/setup/fields.init');
 
 init()
-    //.CreateCustomFields(hyperion)
+    // .CreateCustomFields(hyperion)
     .then(() => {
         app.use(extensionCheckUpdatesMiddleware);
-        //app.use(`${program.root}/versioninfo`, extensionCheckUpdatesRouter);
+        // app.use(`${program.root}/versioninfo`, extensionCheckUpdatesRouter);
         // start your application in the port specified.
         const expressServer = app.listen(program.port, async () => {
             // const dataUsers = await api.doGet('RetrieveUsers');
 
-            
             // app.post(`${program.root}/send-inbond`, async (request, response) => {
             //     const guidList = request.body.operations.join(';');
             //     const root = program.root.substring(1).split('/').join('||');

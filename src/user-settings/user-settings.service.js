@@ -2,7 +2,6 @@ const helper = require('@magaya/db-helper');
 const dateFormat = require('dateformat');
 const soapApiClient = require('../mgy-soap-client/magaya-soap.client');
 const { userSettingsMapper } = require('./user-settings.mapper');
-const connInit = require('../setup/connection.init');
 
 const apiClient = require('../ai-document-cs/api-client');
 
@@ -142,10 +141,7 @@ module.exports = (hyperion) => {
             AccountPayableName: accountPayable?.name || 'Account Payable',
         };
 
-        if (paymentChange !== paymentTransaction) {
-            const workflowInit = connInit('', networkId, '', !paymentTransaction);
-            await workflowInit.subscriberWorkflow();
-        }
+
 
         const data = await api.doPost('UpdateApiAccountingUser', requestObj);
         return data;
