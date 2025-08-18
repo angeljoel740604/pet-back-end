@@ -75,26 +75,34 @@ module.exports = (apiCredentials) => {
 
   async function getDataContainedItem(items) {
     const listItems = [];
+    if (!items || !Array.isArray(items)) {
+      return listItems;
+    }
+    
     for (const item of items) {
-      const htsString = item.HtsNumber && item.HtsNumber.replaceAll(".", "");
-      const htsArray = htsString.split(",");
-      const htsNumber = htsArray[htsArray.length - 1];
-      const manufacturer = item.Manufaturer && {
+      if (!item || typeof item !== 'object') {
+        continue;
+      }
+      
+      const htsString = item.HtsNumber ? String(item.HtsNumber).replaceAll(".", "") : "";
+      const htsArray = htsString ? htsString.split(",") : [""];
+      const htsNumber = htsArray[htsArray.length - 1] || "";
+      const manufacturer = item.Manufacturer && {
         Manufaturer: {
           Type: "Client",
-          Name: item.Manufaturer.Name || "",
+          Name: (item.Manufacturer && item.Manufacturer.Name) || "",
           Address: {
-            Street: item.Manufaturer.Address && item.Manufaturer.Address.Street,
-            City: item.Manufaturer.Address && item.Manufaturer.Address.City,
-            State: item.Manufaturer.Address && item.Manufaturer.Address.State,
+            Street: item.Manufacturer && item.Manufacturer.Address && item.Manufacturer.Address.Street,
+            City: item.Manufacturer && item.Manufacturer.Address && item.Manufacturer.Address.City,
+            State: item.Manufacturer && item.Manufacturer.Address && item.Manufacturer.Address.State,
             ZipCode:
-              item.Manufaturer.Address && item.Manufaturer.Address.ZipCode,
+              item.Manufacturer && item.Manufacturer.Address && item.Manufacturer.Address.ZipCode,
             Country: {
               "@": {
                 Code:
-                  item.Manufaturer.Address && item.Manufaturer.Address.Country,
+                  item.Manufacturer && item.Manufacturer.Address && item.Manufacturer.Address.Country,
               },
-              "#": item.Manufaturer.Address && item.Manufaturer.Address.Country,
+              "#": item.Manufacturer && item.Manufacturer.Address && item.Manufacturer.Address.Country,
             },
           },
           // Phone: item.Manufacture.Phone || '',
