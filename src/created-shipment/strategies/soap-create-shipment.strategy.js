@@ -519,7 +519,7 @@ module.exports = (apiCredentials) => {
   }
 
   async function getDataShipment(jsonData) {
-    const listHouses = jsonData && jsonData.Houses;
+    const listHouses = jsonData && jsonData.Houses || [];
     const wayNumber =
       jsonData && jsonData.Master && jsonData.Master.WayBillNumber;
     for (let i = 0; i < listHouses.length; i += 1) {

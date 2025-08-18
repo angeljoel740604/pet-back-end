@@ -11,12 +11,12 @@ const logger = require("../logger");
 router.post("/create-shipment", async (request, response) => {
   try {
     const { hyperion } = globalContext.getContext();
-    const { ApiCredentials, Payload, TransactionId, TransactionType } =
+    const { ApiCredentials, Payload, TransactionId } =
       request.body;
     const result = await shipmentService(
       ApiCredentials,
       hyperion
-    ).insertShipmentIsf(Payload, TransactionId, TransactionType);
+    ).insertShipmentIsf(Payload, TransactionId);
     if (result) {
       response.json(result);
     } else {
@@ -35,5 +35,7 @@ router.post("/create-shipment", async (request, response) => {
     }
   }
 });
+
+
 
 module.exports = router;

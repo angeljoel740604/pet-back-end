@@ -16,7 +16,7 @@ const bodyParser = require('body-parser');
 // helper for filesystem.
 
 const hyperionMiddleware = require('@magaya/hyperion-express-middleware');
-const extensionCheckUpdates = require('@magaya/extension-check-updates');
+//const extensionCheckUpdates = require('@magaya/extension-check-updates');
 const packageJson = require('./package.json');
 
 const extension = { company: 'magaya', name: 'ai-document' };
@@ -47,7 +47,7 @@ if (!program.port) {
     process.exit(1);
 }
 
-const extensionCheckUpdatesMiddleware = extensionCheckUpdates.middleware(extension, program.networkId);
+//const extensionCheckUpdatesMiddleware = extensionCheckUpdates.middleware(extension, program.networkId);
 // const extensionCheckUpdatesRouter = extensionCheckUpdates.router;
 
 const middleware = hyperionMiddleware.middleware(process.argv, config);
@@ -88,7 +88,7 @@ const init = require('./src/setup/initialize');
 init()
     // .CreateCustomFields(hyperion)
     .then(() => {
-        app.use(extensionCheckUpdatesMiddleware);
+        //app.use(extensionCheckUpdatesMiddleware);
         // app.use(`${program.root}/versioninfo`, extensionCheckUpdatesRouter);
         // start your application in the port specified.
         const expressServer = app.listen(program.port, async () => {
