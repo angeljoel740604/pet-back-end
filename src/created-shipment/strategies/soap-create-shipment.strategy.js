@@ -140,19 +140,7 @@ module.exports = (apiCredentials) => {
                     Code: (item.Package && item.Package.Code) || 'PCK',
                     Name: (item.Package && item.Package.Name) || 'Package',
                 },
-                AMSData: {
-                    HarmonizedTariff: {
-                        '@': { Code: htsNumber },
-                    },
-                    Country: {
-                        '@': {
-                            Code: item.CountryOfOrigin && item.CountryOfOrigin.Code,
-                        },
-                        '#':
-                            (item.CountryOfOrigin && item.CountryOfOrigin.Name) ||
-                            (item.CountryOfOrigin && item.CountryOfOrigin.Code),
-                    },
-                },
+
                 ...manufacturer,
                 // SupplierInvoiceNumber: item.InvoiceNumber,
             };
