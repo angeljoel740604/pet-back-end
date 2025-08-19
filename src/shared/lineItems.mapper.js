@@ -44,9 +44,9 @@ module.exports.lineItemsMapper = (
         undefined,
     };
     const htsData =
-      (item.AMSData &&
-        item.AMSData.HarmonizedTariff &&
-        item.AMSData.HarmonizedTariff.Code) ||
+      // (item.AMSData &&
+      //   item.AMSData.HarmonizedTariff &&
+      //   item.AMSData.HarmonizedTariff.Code) ||
       undefined;
     const countryOrigin =
       (item.AMSData && item.AMSData.Country && item.AMSData.Country.Code) ||

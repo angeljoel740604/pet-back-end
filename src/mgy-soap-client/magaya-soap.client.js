@@ -2,6 +2,7 @@ const soap = require('soap');
 const axios = require('axios');
 const globalContext = require('../global-context');
 const logger = require('../logger');
+const wsdlHelper = require('./wsdl-helper');
 
 const DEFAULT_WSDL = 'http://localhost:3691/CSSoapService?wsdl';
 
@@ -53,7 +54,30 @@ async function initSoapClient(username, userPassword) {
     }
     return false;
 }
-
+// const initSoapClient = async (username, userPassword) => {
+//     console.log(`[${new Date().toUTCString()}][info]: Initializing soap client`);
+//     const networkId = '33087';
+//     global._WSDL_URL = DEFAULT_WSDL || global._WSDL_URL || (await wsdlHelper.getUrl({ networkId }));
+//     try {
+//         if (!global._WSDL_URL) {
+//             console.log(
+//                 `[${new Date().toUTCString()}][error]: Initializing soap client:Env var WSDL_URL not found.`,
+//             );
+//             return false;
+//         }
+//         global._CSCLIENT = global._CSCLIENT || (await soap.createClientAsync(global._WSDL_URL));
+//         const res = await global._CSCLIENT.StartSessionAsync({
+//             user: username,
+//             pass: userPassword,
+//         });
+//         global._API_SESSION_ID = res[0].access_key;
+//         console.log(`[${new Date().toUTCString()}][info]: Initialized soap client. Id:${networkId}`);
+//         return true;
+//     } catch (error) {
+//         console.log(`[${new Date().toUTCString()}][error]: Initializing soap client: ${error.message}`);
+//     }
+//     return false;
+// };
 async function testAPI(username, userPassword) {
     try {
         const wsdlUrl = await getSoapWsdl();
