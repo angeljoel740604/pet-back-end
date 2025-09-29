@@ -431,9 +431,12 @@ module.exports = (apiCredentials) => {
                 Method: ((motCode === '40' || motCode === '41') && 'Air') || 'Ocean',
             },
             Direction: (jsonData.Master && jsonData.Master.Direction) || 'Incoming',
-            EstimatedArrivalDate: utils.convertDatetoUTC(jsonData.Master && jsonData.Master.ArrivalDate),
-            EstimatedDepartureDate: utils.convertDatetoUTC(jsonData.Master && jsonData.Master.DepartureDate),
-
+            EstimatedArrivalDate: utils.convertDatetoUTC(
+                (jsonData.Master && jsonData.Master.ArrivalDate) || utils.convertDatetoUTC(dtCurrent),
+            ),
+            EstimatedDepartureDate: utils.convertDatetoUTC(
+                (jsonData.Master && jsonData.Master.DepartureDate) || utils.convertDatetoUTC(dtCurrent),
+            ),
             ...originPort,
             ...destinationPort,
             ...releasePort,
