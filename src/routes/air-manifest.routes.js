@@ -1,5 +1,6 @@
 const express = require("express");
 require("express-async-errors");
+const axios = require("axios");
 
 const router = express.Router();
 const airManifestService = require("../air-manifest/air-manifest.service");
@@ -134,6 +135,59 @@ router.post("/create-shipment", async (request, response) => {
     response.status(500).json({
       error: error.message || "Internal Server Error"
     });
+  }
+});
+
+/**
+ * GET /air-manifest/pdf-proxy
+ * Proxy para descargar PDFs desde Azure Blob Storage evitando CORS
+ * Query param: url - La URL del PDF en Azure Storage
+ */
+router.get("/pdf-proxy", async (request, response) => {
+  try {
+    const { url } = request.query;
+
+    if (!url) {
+      return response.status(400).json({ error: "URL parameter is required" });
+    }
+
+    // Validar que sea una URL de Azure Storage
+    if (!url.includes('127.0.0.1:10000') && !url.includes('blob.core.windows.net')) {
+      return response.status(400).json({ error: "Invalid Azure Storage URL" });
+    }
+
+    logger.info(`Proxying PDF from: ${url}`);
+
+    // Descargar el PDF desde Azure Storage
+    const pdfResponse = await axios.get(url, {
+      responseType: 'arraybuffer',
+      timeout: 30000,
+      headers: {
+        'Accept': 'application/pdf'
+      }
+    });
+
+    // Enviar el PDF al cliente con las cabeceras CORS correctas
+    response.set({
+      'Content-Type': 'application/pdf',
+      'Content-Length': pdfResponse.data.length,
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'public, max-age=3600'
+    });
+
+    response.send(Buffer.from(pdfResponse.data));
+  } catch (error) {
+    logger.error("Error proxying PDF:", error);
+
+    if (error.response) {
+      response.status(error.response.status).json({
+        error: `Failed to fetch PDF: ${error.response.statusText}`
+      });
+    } else {
+      response.status(500).json({
+        error: error.message || "Internal Server Error"
+      });
+    }
   }
 });
 
