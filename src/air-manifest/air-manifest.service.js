@@ -85,6 +85,78 @@ module.exports = {
   },
 
   /**
+   * Obtiene todos los manifests de una partición específica
+   * @param {string} partitionKey - Clave de partición
+   * @returns {Promise<Array>} Lista de manifests
+   */
+  async getManifestsByPartitionKey(partitionKey) {
+    try {
+      const azureFunctionUrl = process.env.AZURE_FUNCTION_GET_MANIFESTS_BY_PARTITION_URL;
+      const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+
+      if (!azureFunctionUrl) {
+        throw new Error('AZURE_FUNCTION_GET_MANIFESTS_BY_PARTITION_URL not configured');
+      }
+
+      const response = await axios.get(azureFunctionUrl, {
+        params: { partitionKey },
+        headers: {
+          'x-functions-key': apiKey || ''
+        },
+        timeout: 30000
+      });
+
+      return response.data;
+    } catch (error) {
+      logger.error('Error fetching manifests by partition key from Azure Function:', error);
+
+      if (error.response) {
+        throw new Error(error.response.data?.message || error.response.data?.error || `HTTP ${error.response.status}`);
+      } else if (error.request) {
+        throw new Error('No response from Azure Function');
+      } else {
+        throw error;
+      }
+    }
+  },
+
+  /**
+   * Elimina un air manifest
+   * @param {string} id - ID del manifest a eliminar
+   * @returns {Promise<Object>} Resultado de la eliminación
+   */
+  async deleteManifest(id) {
+    try {
+      const azureFunctionUrl = process.env.AZURE_FUNCTION_DELETE_AIR_MANIFEST_URL;
+      const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+
+      if (!azureFunctionUrl) {
+        throw new Error('AZURE_FUNCTION_DELETE_AIR_MANIFEST_URL not configured');
+      }
+
+      const response = await axios.delete(azureFunctionUrl, {
+        params: { id },
+        headers: {
+          'x-functions-key': apiKey || ''
+        },
+        timeout: 30000
+      });
+
+      return response.data;
+    } catch (error) {
+      logger.error('Error deleting air manifest from Azure Function:', error);
+
+      if (error.response) {
+        throw new Error(error.response.data?.message || error.response.data?.error || `HTTP ${error.response.status}`);
+      } else if (error.request) {
+        throw new Error('No response from Azure Function');
+      } else {
+        throw error;
+      }
+    }
+  },
+
+  /**
    * Crea un shipment en Magaya desde un air manifest
    * @param {string} airManifestId - ID del air manifest
    * @returns {Promise<Object>} Resultado de la creación del shipment

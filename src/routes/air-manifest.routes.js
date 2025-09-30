@@ -65,6 +65,52 @@ router.put("/:id", async (request, response) => {
 });
 
 /**
+ * GET /air-manifest/by-partition/:partitionKey
+ * Obtiene todos los manifests de una partición específica
+ */
+router.get("/by-partition/:partitionKey", async (request, response) => {
+  try {
+    const { partitionKey } = request.params;
+
+    if (!partitionKey) {
+      return response.status(400).json({ error: "PartitionKey is required" });
+    }
+
+    const result = await airManifestService.getManifestsByPartitionKey(partitionKey);
+
+    response.json(result);
+  } catch (error) {
+    logger.error("Error getting manifests by partition key:", error);
+    response.status(500).json({
+      error: error.message || "Internal Server Error"
+    });
+  }
+});
+
+/**
+ * DELETE /air-manifest/:id
+ * Elimina un air manifest
+ */
+router.delete("/:id", async (request, response) => {
+  try {
+    const { id } = request.params;
+
+    if (!id) {
+      return response.status(400).json({ error: "ID is required" });
+    }
+
+    const result = await airManifestService.deleteManifest(id);
+
+    response.json(result);
+  } catch (error) {
+    logger.error("Error deleting air manifest:", error);
+    response.status(500).json({
+      error: error.message || "Internal Server Error"
+    });
+  }
+});
+
+/**
  * POST /air-manifest/create-shipment
  * Crea un shipment en Magaya desde los datos del air manifest
  */
