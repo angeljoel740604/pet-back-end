@@ -463,7 +463,7 @@ module.exports = (apiCredentials) => {
         const dataItem = jsonData.Items && (await getDataItems(jsonData));
 
         const dataEntities = await getDataEntities(jsonData);
-        const dataHouse = await getDataHouses(jsonData, listHouses);
+        const dataHouse = null ; //await getDataHouses(jsonData, listHouses);
 
         return {
             ...dataGeneral,

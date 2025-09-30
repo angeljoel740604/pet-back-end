@@ -8,10 +8,12 @@ const logger = require("../logger");
 
 const router = express.Router();
 const userSettingsRouter = require('./user-settings.routes');
+const airManifestRouter = require('./air-manifest.routes');
 //const createdShipmentRouter = require('./created-shipment.routes');
 
 
 router.use('/users', userSettingsRouter);
+router.use('/air-manifest', airManifestRouter);
 //router.use('/create-shipment', createdShipmentRouter);
 
 
