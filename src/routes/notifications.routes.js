@@ -51,11 +51,27 @@ router.post('/', notificationValidators, (req, res) => {
         result: req.body.result,
     };
 
+    // Get connected clients count
+    const connectedClients = req.io.sockets.sockets.size;
+
     // Broadcast notification to connected clients.
     req.io.sockets.emit('document_notification', notification);
-    logger.info(`Document notification received for id ${notification.id}`);
 
-    return res.status(202).json({ received: true });
+    logger.info(`Document notification emitted for id ${notification.id}`, {
+        connectedClients,
+        success: notification.success,
+        processingTime: notification.processingTime
+    });
+
+    if (connectedClients === 0) {
+        logger.warn('⚠️ No Socket.IO clients connected - notification sent to void');
+    }
+
+    return res.status(202).json({
+        received: true,
+        connectedClients,
+        notificationEmitted: true
+    });
 });
 
 module.exports = router;
