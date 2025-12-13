@@ -395,6 +395,10 @@ module.exports = (apiCredentials) => {
         const releasePort = await portValidation(jsonData.Master, 'ReleasePort');
         const itLocation = await portValidation(jsonData.Master, 'ITLocation');
         const dtCurrent = new Date().toLocaleString('en-US');
+        // calculate an arrivalDate in the future to avoid issues from today plus 30 days
+        let arrivalDate = new Date();
+        arrivalDate.setDate(arrivalDate.getDate() + 30);
+        arrivalDate = arrivalDate.toLocaleString('en-US');
         const firmsCode = jsonData.Master &&
             jsonData.Master.FirmsCode && {
                 FIRMSCode: jsonData.Master.FirmsCode.Code,
@@ -431,8 +435,8 @@ module.exports = (apiCredentials) => {
                 Method: ((motCode === '40' || motCode === '41') && 'Air') || 'Ocean',
             },
             Direction: (jsonData.Master && jsonData.Master.Direction) || 'Incoming',
-            EstimatedArrivalDate: utils.convertDatetoUTC(jsonData.Master && jsonData.Master.ArrivalDate),
-            EstimatedDepartureDate: utils.convertDatetoUTC(jsonData.Master && jsonData.Master.DepartureDate),
+            EstimatedArrivalDate: utils.convertDatetoUTC(jsonData.Master && jsonData.Master.ArrivalDate || arrivalDate),
+            EstimatedDepartureDate: utils.convertDatetoUTC(jsonData.Master && jsonData.Master.DepartureDate || dtCurrent),
 
             ...originPort,
             ...destinationPort,
