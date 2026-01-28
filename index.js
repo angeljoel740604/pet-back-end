@@ -16,7 +16,7 @@ const bodyParser = require('body-parser');
 // helper for filesystem.
 
 const hyperionMiddleware = require('@magaya/hyperion-express-middleware');
-const extensionCheckUpdates = require('@magaya/extension-check-updates');
+//const extensionCheckUpdates = require('@magaya/extension-check-updates');
 const packageJson = require('./package.json');
 
 const extension = { company: 'magaya', name: 'ai-document' };
@@ -47,7 +47,7 @@ if (!program.port) {
     process.exit(1);
 }
 
-const extensionCheckUpdatesMiddleware = extensionCheckUpdates.middleware(extension, program.networkId);
+//const extensionCheckUpdatesMiddleware = extensionCheckUpdates.middleware(extension, program.networkId);
 // const extensionCheckUpdatesRouter = extensionCheckUpdates.router;
 
 const middleware = hyperionMiddleware.middleware(process.argv, config);
@@ -83,41 +83,21 @@ app.use(
 );
 const server = require('./src/routes/routes');
 
-const init = require('./src/setup/fields.init');
+const init = require('./src/setup/initialize');
 
 init()
     // .CreateCustomFields(hyperion)
     .then(() => {
-        app.use(extensionCheckUpdatesMiddleware);
+        //app.use(extensionCheckUpdatesMiddleware);
         // app.use(`${program.root}/versioninfo`, extensionCheckUpdatesRouter);
         // start your application in the port specified.
         const expressServer = app.listen(program.port, async () => {
-            // const dataUsers = await api.doGet('RetrieveUsers');
-
-            // app.post(`${program.root}/send-inbond`, async (request, response) => {
-            //     const guidList = request.body.operations.join(';');
-            //     const root = program.root.substring(1).split('/').join('||');
-
-            //     response.redirect(`${program.root}/index.html#/inbond/${guidList}/${program.port}/${root}`);
-            // });
-
-            // app.get(`${program.root}/configurations`, async (request, response) => {
-            //     const root = program.root.substring(1).split('/').join('||');
-
-            //     response.redirect(`${program.root}/index.html#/users/${program.port}/${root}`);
-            // });
-
-            // app.post(`${program.root}/send-attachment`, async (request, response) => {
-            //     const guidList = request.body.operations.join(';');
-            //     const root = program.root.substring(1).split('/').join('||');
-            //     response.redirect(
-            //         `${program.root}/index.html#/attach-document/${guidList}/${program.port}/${root}`,
-            //     );
-            // });
+         
 
             if (!program.gateway) {
                 //  stateHelper.started();
-                logger.info(`Server started on port ${program.port}...`);
+                //logger.info(`Server started on port ${program.port}...`);
+                console.log(`Server started on port ${program.port}...`);
             } else {
                 sockets(
                     {

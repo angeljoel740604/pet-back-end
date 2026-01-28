@@ -32,11 +32,10 @@ module.exports = (apiCredentials, hyperion) => {
     return entity;
   };
 
-  const insertShipmentIsf = async (data, transactionId, transactionType) => {
+  const insertShipmentIsf = async (data, transactionId) => {
     const response = await soapStrategy(apiCredentials).createShipment(
       data,
-      transactionId,
-      transactionType
+      transactionId
     );
     if (response.status === "Imported") {
       await getShipmentByGuid(transactionId);
