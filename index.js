@@ -122,13 +122,34 @@ init()
             }
             // logger.LogMessage(`Server started on port ${program.port}...`);
         });
-        const scktio = io(expressServer, {
-            cors: {
-                origin: '*',
-            },
-            path: `${program.root}/socket.io`,
+        // Socket.io configuration
+        const scktio = process.env.NODE_ENV === 'development'
+            ? io(expressServer, {
+                cors: {
+                    origin: '*',
+                },
+            })
+            : io(expressServer, {
+                cors: {
+                    origin: '*',
+                },
+                path: `${program.root}/socket.io`,
+            });
+
+        // Socket.io connection handling
+        scktio.sockets.on('connection', function (socket) {
+            console.log('Client connected:', socket.id);
+
+            socket.on('echo', function (data) {
+                scktio.sockets.emit('message', data);
+            });
+
+            socket.on('disconnect', function () {
+                console.log('Client disconnected:', socket.id);
+            });
         });
 
+        // Middleware to access io from routes
         app.use((req, res, next) => {
             req.io = scktio;
             next();
