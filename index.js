@@ -123,7 +123,7 @@ init()
             // logger.LogMessage(`Server started on port ${program.port}...`);
         });
         // Socket.io configuration
-        const scktio = process.env.NODE_ENV === 'development'
+        const scktio = process.env.ENVIRONMENT === 'development'
             ? io(expressServer, {
                 cors: {
                     origin: '*',
