@@ -9,11 +9,13 @@ const logger = require('../logger');
 const router = express.Router();
 const userSettingsRouter = require('./user-settings.routes');
 const airManifestRouter = require('./air-manifest.routes');
+const billOfLadingRouter = require('./bill-of-lading.routes');
 const notificationsRouter = require('./notifications.routes');
 //const createdShipmentRouter = require('./created-shipment.routes');
 
 router.use('/users', userSettingsRouter);
 router.use('/air-manifest', airManifestRouter);
+router.use('/bill-of-lading', billOfLadingRouter);
 router.use('/notifications', notificationsRouter);
 
 //router.use('/create-shipment', createdShipmentRouter);
