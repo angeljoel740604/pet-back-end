@@ -149,6 +149,47 @@ module.exports = {
   },
 
   /**
+   * Sube un archivo PDF de bill of lading a Azure Function para procesamiento con IA
+   * @param {Buffer} fileBuffer - Buffer del archivo PDF
+   * @param {string} fileName - Nombre original del archivo
+   * @returns {Promise<Object>} Resultado { id, fileName, fileSize, blobUrl, previewUrl }
+   */
+  async uploadBol(fileBuffer, fileName) {
+    try {
+      const FormData = require('form-data');
+      const azureFunctionUrl = process.env.AZURE_FUNCTION_UPLOAD_BOL_URL;
+      const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+
+      if (!azureFunctionUrl) {
+        throw new Error('AZURE_FUNCTION_UPLOAD_BOL_URL not configured');
+      }
+
+      const formData = new FormData();
+      formData.append('file', fileBuffer, { filename: fileName, contentType: 'application/pdf' });
+
+      const response = await axios.post(azureFunctionUrl, formData, {
+        headers: {
+          ...formData.getHeaders(),
+          'x-functions-key': apiKey || ''
+        },
+        timeout: 60000
+      });
+
+      return response.data;
+    } catch (error) {
+      logger.error('Error uploading bill of lading to Azure Function:', error);
+
+      if (error.response) {
+        throw new Error(error.response.data?.message || error.response.data?.error || `HTTP ${error.response.status}`);
+      } else if (error.request) {
+        throw new Error('No response from Azure Function');
+      } else {
+        throw error;
+      }
+    }
+  },
+
+  /**
    * Crea un shipment en Magaya desde un bill of lading
    * @param {string} bolId - ID del bill of lading
    * @returns {Promise<Object>} Resultado de la creación del shipment

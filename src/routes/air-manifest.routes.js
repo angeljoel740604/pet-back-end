@@ -87,6 +87,33 @@ router.get("/pdf-proxy", async (request, response) => {
 });
 
 /**
+ * POST /air-manifest/upload
+ * Proxy de upload de PDF hacia Azure Function para procesamiento con IA
+ */
+router.post("/upload", async (request, response) => {
+  try {
+    if (!request.files || Object.keys(request.files).length === 0) {
+      return response.status(400).json({ error: "No file uploaded" });
+    }
+
+    const file = request.files.file || request.files[Object.keys(request.files)[0]];
+
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      return response.status(400).json({ error: "Only PDF files are accepted" });
+    }
+
+    const result = await airManifestService.uploadManifest(file.data, file.name);
+
+    response.json(result);
+  } catch (error) {
+    logger.error("Error uploading air manifest:", error);
+    response.status(500).json({
+      error: error.message || "Internal Server Error"
+    });
+  }
+});
+
+/**
  * GET /air-manifest/by-partition/:partitionKey
  * Obtiene todos los manifests de una partición específica
  */
