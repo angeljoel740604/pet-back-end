@@ -98,8 +98,12 @@ router.post("/upload", async (request, response) => {
 
     const file = request.files.file || request.files[Object.keys(request.files)[0]];
 
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      return response.status(400).json({ error: "Only PDF files are accepted" });
+    const ext = file.name.toLowerCase().match(/\.[^.]+$/)?.[0] || '';
+    const accepted = ['.pdf', '.txt', '.csv'];
+    if (!accepted.includes(ext)) {
+      return response.status(400).json({
+        error: `Unsupported file type '${ext}'. Accepted: PDF, TXT, CSV`
+      });
     }
 
     const result = await airManifestService.uploadManifest(file.data, file.name);

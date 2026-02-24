@@ -157,14 +157,16 @@ module.exports = {
   },
 
   /**
-   * Sube un archivo PDF de air manifest a Azure Function para procesamiento con IA
-   * @param {Buffer} fileBuffer - Buffer del archivo PDF
+   * Sube un archivo de air manifest a Azure Function para procesamiento con IA.
+   * - PDF  → multipart/form-data (blob storage + DocumentUrl para el LLM)
+   * - TXT / CSV → application/json { filename, fileContent } (Content para el LLM)
+   *
+   * @param {Buffer} fileBuffer - Buffer del archivo
    * @param {string} fileName - Nombre original del archivo
    * @returns {Promise<Object>} Resultado { id, fileName, fileSize, blobUrl, previewUrl }
    */
   async uploadManifest(fileBuffer, fileName) {
     try {
-      const FormData = require('form-data');
       const azureFunctionUrl = process.env.AZURE_FUNCTION_UPLOAD_AIR_MANIFEST_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
 
@@ -172,16 +174,39 @@ module.exports = {
         throw new Error('AZURE_FUNCTION_UPLOAD_AIR_MANIFEST_URL not configured');
       }
 
-      const formData = new FormData();
-      formData.append('file', fileBuffer, { filename: fileName, contentType: 'application/pdf' });
+      const ext = fileName.toLowerCase().match(/\.[^.]+$/)?.[0] || '';
+      const isText = ext === '.txt' || ext === '.csv';
 
-      const response = await axios.post(azureFunctionUrl, formData, {
-        headers: {
-          ...formData.getHeaders(),
-          'x-functions-key': apiKey || ''
-        },
-        timeout: 60000
-      });
+      let response;
+
+      if (isText) {
+        // Text import: send as JSON so the Azure Function sets llmRequest.Content
+        const fileContent = fileBuffer.toString('utf8');
+        response = await axios.post(
+          azureFunctionUrl,
+          { filename: fileName, fileContent },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'x-functions-key': apiKey || ''
+            },
+            timeout: 60000
+          }
+        );
+      } else {
+        // PDF upload: multipart so the Azure Function uploads to Blob and sets llmRequest.DocumentUrl
+        const FormData = require('form-data');
+        const formData = new FormData();
+        formData.append('file', fileBuffer, { filename: fileName, contentType: 'application/pdf' });
+
+        response = await axios.post(azureFunctionUrl, formData, {
+          headers: {
+            ...formData.getHeaders(),
+            'x-functions-key': apiKey || ''
+          },
+          timeout: 60000
+        });
+      }
 
       return response.data;
     } catch (error) {
