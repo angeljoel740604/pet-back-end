@@ -7,14 +7,14 @@ const airManifestService = require("../air-manifest/air-manifest.service");
 const logger = require("../logger");
 
 /**
- * IMPORTANTE: Las rutas específicas deben ir ANTES de las rutas paramétricas
- * para evitar que /:id capture rutas como /pdf-proxy o /by-partition
+ * IMPORTANT: Specific routes must be declared BEFORE parametric routes
+ * to prevent /:id from capturing paths like /pdf-proxy or /by-partition
  */
 
 /**
  * GET /air-manifest/pdf-proxy
- * Proxy para descargar PDFs desde Azure Blob Storage evitando CORS
- * Query param: url - La URL del PDF en Azure Storage
+ * Proxy to download PDFs from Azure Blob Storage, bypassing CORS restrictions.
+ * Query param: url - The PDF URL in Azure Storage
  */
 router.get("/pdf-proxy", async (request, response) => {
   try {
@@ -24,14 +24,14 @@ router.get("/pdf-proxy", async (request, response) => {
       return response.status(400).json({ error: "URL parameter is required" });
     }
 
-    // Validar que sea una URL de Azure Storage
+    // Validate that the URL belongs to Azure Storage
     if (!url.includes('127.0.0.1:10000') && !url.includes('blob.core.windows.net')) {
       return response.status(400).json({ error: "Invalid Azure Storage URL" });
     }
 
     logger.info(`Proxying PDF from: ${url}`);
 
-    // Descargar el PDF desde Azure Storage
+    // Download the PDF from Azure Storage
     const pdfResponse = await axios.get(url, {
       responseType: 'arraybuffer',
       timeout: 30000,
@@ -40,7 +40,7 @@ router.get("/pdf-proxy", async (request, response) => {
       }
     });
 
-    // Enviar el PDF al cliente con las cabeceras CORS correctas
+    // Forward the PDF to the client with the correct CORS headers
     response.set({
       'Content-Type': 'application/pdf',
       'Content-Length': pdfResponse.data.length,
@@ -59,7 +59,7 @@ router.get("/pdf-proxy", async (request, response) => {
     });
 
     if (error.response) {
-      // El servidor de Azure Storage respondió con un error
+      // Azure Storage responded with an error status
       const statusCode = error.response.status;
       const errorMessage = error.response.data?.toString() || error.response.statusText;
 
@@ -70,14 +70,14 @@ router.get("/pdf-proxy", async (request, response) => {
         details: statusCode === 404 ? 'File not found in Azure Storage. The file may have been deleted or the URL is incorrect.' : null
       });
     } else if (error.request) {
-      // La petición se hizo pero no se recibió respuesta
+      // Request was sent but no response was received
       return response.status(503).json({
         error: "Azure Storage is not responding",
         url: request.query.url,
         details: "Check if Azurite is running on 127.0.0.1:10000"
       });
     } else {
-      // Error al configurar la petición
+      // Error while setting up the request
       return response.status(500).json({
         error: error.message || "Internal Server Error",
         url: request.query.url
@@ -88,7 +88,8 @@ router.get("/pdf-proxy", async (request, response) => {
 
 /**
  * POST /air-manifest/upload
- * Proxy de upload de PDF hacia Azure Function para procesamiento con IA
+ * Forwards a document to the Azure Function for AI processing.
+ * Accepted formats: PDF, TXT, CSV
  */
 router.post("/upload", async (request, response) => {
   try {
@@ -119,7 +120,7 @@ router.post("/upload", async (request, response) => {
 
 /**
  * GET /air-manifest/by-partition/:partitionKey
- * Obtiene todos los manifests de una partición específica
+ * Returns all manifests belonging to a specific partition key.
  */
 router.get("/by-partition/:partitionKey", async (request, response) => {
   try {
@@ -142,7 +143,7 @@ router.get("/by-partition/:partitionKey", async (request, response) => {
 
 /**
  * DELETE /air-manifest/:id
- * Elimina un air manifest
+ * Deletes an air manifest by ID.
  */
 router.delete("/:id", async (request, response) => {
   try {
@@ -165,7 +166,7 @@ router.delete("/:id", async (request, response) => {
 
 /**
  * POST /air-manifest/create-shipment
- * Crea un shipment en Magaya desde los datos del air manifest
+ * Creates a Magaya shipment from an existing air manifest record.
  */
 router.post("/create-shipment", async (request, response) => {
   try {
@@ -192,8 +193,8 @@ router.post("/create-shipment", async (request, response) => {
 
 /**
  * GET /air-manifest/:id
- * Obtiene los datos del air manifest procesado desde Azure Function
- * NOTA: Esta ruta paramétrica debe ir AL FINAL para no capturar otras rutas específicas
+ * Returns the processed air manifest data from the Azure Function.
+ * NOTE: This parametric route must be declared LAST to avoid capturing specific paths.
  */
 router.get("/:id", async (request, response) => {
   try {
@@ -220,8 +221,8 @@ router.get("/:id", async (request, response) => {
 
 /**
  * PUT /air-manifest/:id
- * Actualiza los datos del air manifest en Azure Function
- * NOTA: Esta ruta paramétrica debe ir AL FINAL
+ * Updates an air manifest record in the Azure Function.
+ * NOTE: This parametric route must be declared LAST.
  */
 router.put("/:id", async (request, response) => {
   try {
@@ -252,9 +253,8 @@ router.put("/:id", async (request, response) => {
 });
 
 /**
- * DELETE /air-manifest/:id
- * Elimina un air manifest
- * NOTA: Esta ruta paramétrica debe ir AL FINAL
+ * DELETE /air-manifest/:id  (duplicate kept for compatibility)
+ * NOTE: This parametric route must be declared LAST.
  */
 router.delete("/:id", async (request, response) => {
   try {

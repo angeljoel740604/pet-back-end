@@ -2,13 +2,13 @@ const axios = require('axios');
 const logger = require('../logger');
 
 /**
- * Servicio para interactuar con las Azure Functions del Air Manifest
+ * Service for interacting with the Air Manifest Azure Functions.
  */
 module.exports = {
   /**
-   * Obtiene los datos de un air manifest procesado
-   * @param {string} id - ID del archivo/manifest (fileName)
-   * @returns {Promise<Object>} Datos del air manifest
+   * Retrieves a processed air manifest by ID.
+   * @param {string} id - Document/manifest ID (fileName)
+   * @returns {Promise<Object>} Air manifest data
    */
   async getAirManifest(id) {
     try {
@@ -24,7 +24,7 @@ module.exports = {
         headers: {
           'x-functions-key': apiKey || ''
         },
-        timeout: 30000 // 30 segundos timeout
+        timeout: 30000
       });
 
       return response.data;
@@ -32,23 +32,23 @@ module.exports = {
       logger.error('Error fetching air manifest from Azure Function:', error);
 
       if (error.response) {
-        // El servidor respondió con un código de error
+        // Server responded with an error status code
         throw new Error(error.response.data?.message || error.response.data?.error || `HTTP ${error.response.status}`);
       } else if (error.request) {
-        // La petición se hizo pero no se recibió respuesta
+        // Request was sent but no response was received
         throw new Error('No response from Azure Function');
       } else {
-        // Error al configurar la petición
+        // Error while setting up the request
         throw error;
       }
     }
   },
 
   /**
-   * Actualiza los datos de un air manifest
-   * @param {string} id - ID del archivo/manifest
-   * @param {Object} data - Datos del manifest a actualizar
-   * @returns {Promise<Object>} Resultado de la actualización
+   * Updates an air manifest record.
+   * @param {string} id - Document/manifest ID
+   * @param {Object} data - Fields to update
+   * @returns {Promise<Object>} Updated manifest data
    */
   async updateAirManifest(id, data) {
     try {
@@ -85,9 +85,9 @@ module.exports = {
   },
 
   /**
-   * Obtiene todos los manifests de una partición específica
-   * @param {string} partitionKey - Clave de partición
-   * @returns {Promise<Array>} Lista de manifests
+   * Returns all manifests belonging to a specific partition key.
+   * @param {string} partitionKey - Partition key to filter by
+   * @returns {Promise<Array>} List of air manifests
    */
   async getManifestsByPartitionKey(partitionKey) {
     try {
@@ -121,9 +121,9 @@ module.exports = {
   },
 
   /**
-   * Elimina un air manifest
-   * @param {string} id - ID del manifest a eliminar
-   * @returns {Promise<Object>} Resultado de la eliminación
+   * Deletes an air manifest by ID.
+   * @param {string} id - ID of the manifest to delete
+   * @returns {Promise<Object>} Deletion result
    */
   async deleteManifest(id) {
     try {
@@ -157,13 +157,13 @@ module.exports = {
   },
 
   /**
-   * Sube un archivo de air manifest a Azure Function para procesamiento con IA.
-   * - PDF  → multipart/form-data (blob storage + DocumentUrl para el LLM)
-   * - TXT / CSV → application/json { filename, fileContent } (Content para el LLM)
+   * Uploads an air manifest document to the Azure Function for AI processing.
+   * - PDF     → multipart/form-data (uploaded to Blob Storage; sets llmRequest.DocumentUrl)
+   * - TXT/CSV → application/json { filename, fileContent } (sets llmRequest.Content)
    *
-   * @param {Buffer} fileBuffer - Buffer del archivo
-   * @param {string} fileName - Nombre original del archivo
-   * @returns {Promise<Object>} Resultado { id, fileName, fileSize, blobUrl, previewUrl }
+   * @param {Buffer} fileBuffer - File buffer
+   * @param {string} fileName - Original file name
+   * @returns {Promise<Object>} Result { id, fileName, fileSize, blobUrl, previewUrl }
    */
   async uploadManifest(fileBuffer, fileName) {
     try {
@@ -223,9 +223,9 @@ module.exports = {
   },
 
   /**
-   * Crea un shipment en Magaya desde un air manifest
-   * @param {string} airManifestId - ID del air manifest
-   * @returns {Promise<Object>} Resultado de la creación del shipment
+   * Creates a Magaya shipment from an existing air manifest.
+   * @param {string} airManifestId - ID of the source air manifest
+   * @returns {Promise<Object>} Shipment creation result
    */
   async createShipment(airManifestId) {
     try {
@@ -243,7 +243,7 @@ module.exports = {
             'Content-Type': 'application/json',
             'x-functions-key': apiKey || ''
           },
-          timeout: 60000 // 60 segundos para la creación del shipment
+          timeout: 60000
         }
       );
 
