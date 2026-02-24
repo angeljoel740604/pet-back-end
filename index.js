@@ -20,6 +20,7 @@ const hyperionMiddleware = require('@magaya/hyperion-express-middleware');
 const packageJson = require('./package.json');
 
 const extension = { company: 'magaya', name: 'ai-document' };
+const extensionId = `${extension.company}-${extension.name}`;
 program
     .version(packageJson.version)
     .option('-p, --port <n>', 'running port', parseInt)
@@ -32,9 +33,12 @@ program
     .parse(process.argv);
 
 
-const config = require('@magaya/hyperion-extension-api-key').getApiKeyConfig(extension, program.networkId);
 // const connInitEventHandler = require("./src/setup/wf-events-handler");
-
+const config = require('@magaya/hyperion-extension-api-key').getApiKeyConfig(
+    extension,
+    program.networkId,
+    extensionId,
+);
 
 
 const logger = require('./src/logger');
