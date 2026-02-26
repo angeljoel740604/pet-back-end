@@ -22,8 +22,12 @@ router.post('/upload', async (request, response) => {
 
     const file = request.files.file || request.files[Object.keys(request.files)[0]];
 
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      return response.status(400).json({ error: 'Only PDF files are accepted' });
+    const ext = file.name.toLowerCase().match(/\.[^.]+$/)?.[0] || '';
+    const accepted = ['.pdf', '.txt', '.jpg', '.jpeg', '.png'];
+    if (!accepted.includes(ext)) {
+      return response.status(400).json({
+        error: `Unsupported file type '${ext}'. Accepted: PDF, TXT, JPG, PNG`
+      });
     }
 
     const result = await bolService.uploadBol(file.data, file.name);
