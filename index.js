@@ -126,19 +126,14 @@ init()
             }
             // logger.LogMessage(`Server started on port ${program.port}...`);
         });
-        // Socket.io configuration
-        const scktio = process.env.ENVIRONMENT === 'development'
-            ? io(expressServer, {
-                cors: {
-                    origin: '*',
-                },
-            })
-            : io(expressServer, {
-                cors: {
-                    origin: '*',
-                },
-                path: `${program.root}/socket.io`,
-            });
+        // Socket.io configuration — always use the app root as the path
+        // so the frontend path '/server/socket.io' always matches
+        const scktio = io(expressServer, {
+            cors: {
+                origin: '*',
+            },
+            path: `${program.root}/socket.io`,
+        });
 
         // Socket.io connection handling
         scktio.sockets.on('connection', function (socket) {

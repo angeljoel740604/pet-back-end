@@ -54,8 +54,16 @@ router.post('/', notificationValidators, (req, res) => {
     // Get connected clients count
     const connectedClients = req.io.sockets.sockets.size;
 
-    // Broadcast notification to connected clients.
+    // Broadcast processing result to the upload flow listener
     req.io.sockets.emit('document_notification', notification);
+
+    // Also update the document status in the Dashboard list
+    req.io.sockets.emit('document:updated', {
+        id: notification.id,
+        status: notification.success ? 'completed' : 'error',
+        error_message: notification.error || null,
+        updated_at: new Date().toISOString(),
+    });
 
     logger.info(`Document notification emitted for id ${notification.id}`, {
         connectedClients,
