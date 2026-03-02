@@ -8,8 +8,22 @@ const sockets = require('@magaya/socket-tunnel-node');
 require('dotenv').config({ path: path.join(__dirname, './.env') });
 
 const fileUpload = require('express-fileupload');
-
 const hyperionMiddleware = require('@magaya/hyperion-express-middleware');
+const packageJson = require('./package.json');
+
+const environment = process.env.ENVIRONMENT || 'development';
+
+// Parse CLI args first so program.networkId is available
+program
+    .version(packageJson.version)
+    .option('-p, --port <n>', 'running port', parseInt)
+    .option('-r, --root <value>', 'startup root for api')
+    .option('-s, --service-name <value>', 'name for service')
+    .option('-g, --gateway', 'dictates if we should be through gateway')
+    .option('-i, --network-id <n>', 'magaya network id', parseInt)
+    .option('--connection-string <value>', 'connection endpoint for database')
+    .option('--no-daemon', 'pm2 no daemon option')
+    .parse(process.argv);
 
 const extension = { company: 'magaya', name: 'container-tracking' };
 const extensionId = `${extension.company}-${extension.name}`;
@@ -25,28 +39,6 @@ const hyperion = hyperionMiddleware.hyperion(process.argv, config);
 
 const app = express();
 const requestorMiddleware = require('./middlewares/requestor');
-
-const bodyParser = require('body-parser');
-const environment = process.env.ENVIRONMENT || 'development';
-
-// helper for filesystem.
-
-//const extensionCheckUpdates = require('@magaya/extension-check-updates');
-const packageJson = require('./package.json');
-
-program
-    .version(packageJson.version)
-    .option('-p, --port <n>', 'running port', parseInt)
-    .option('-r, --root <value>', 'startup root for api')
-    .option('-s, --service-name <value>', 'name for service')
-    .option('-g, --gateway', 'dictates if we should be through gateway')
-    .option('-i, --network-id <n>', 'magaya network id', parseInt)
-    .option('--connection-string <value>', 'connection endpoint for database')
-    .option('--no-daemon', 'pm2 no daemon option')
-    .parse(process.argv);
-
-// const connInitEventHandler = require("./src/setup/wf-events-handler");
-
 const logger = require('./src/logger');
 
 if (!program.port) {
@@ -57,25 +49,24 @@ if (!program.port) {
     process.exit(1);
 }
 
-//const extensionCheckUpdatesMiddleware = extensionCheckUpdates.middleware(extension, program.networkId);
-// const extensionCheckUpdatesRouter = extensionCheckUpdates.router;
-
-
 const contextInitMiddleware = require('./src/middlewares/context-init.middleware');
 const exceptionMiddleware = require('./src/middlewares/exceptions.middleware');
 
-// apply the middleware in the application.
+// 1. CORS — must be first to handle preflight OPTIONS requests
+app.use(cors({ origin: '*', optionsSuccessStatus: 200 }));
+
+// 2. Body parsers — before any route that reads req.body
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// 3. File uploads
+app.use(fileUpload());
+
+// 4. Magaya platform middleware
 app.use(hyperion);
 app.use(contextInitMiddleware);
 
-// apply other helper middlewares.
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors({ origin: '*', optionsSuccessStatus: 200 }));
-
-app.use(fileUpload());
-
-// connInitEventHandler();
-
+// 5. Static files
 app.use(
     `${program.root}/`,
     express.static(path.join(__dirname, 'src/static'), {
@@ -88,20 +79,15 @@ app.use(
         },
     }),
 );
-const server = require('./src/routes/routes');
 
+const server = require('./src/routes/routes');
 const init = require('./src/setup/initialize');
 
 init()
     // .CreateCustomFields(hyperion)
     .then(() => {
-        //app.use(extensionCheckUpdatesMiddleware);
-        // app.use(`${program.root}/versioninfo`, extensionCheckUpdatesRouter);
-        // start your application in the port specified.
         const httpServer = app.listen(program.port, async () => {
             if (!program.gateway) {
-                //  stateHelper.started();
-                //logger.info(`Server started on port ${program.port}...`);
                 console.log(`Server started on port ${program.port}...`);
             } else {
                 sockets(
@@ -119,37 +105,28 @@ init()
                             logger.error(error);
                             process.exit(1);
                         }
-
-                        // stateHelper.started();
                         logger.info('Server started...');
                     },
                 );
             }
-            // logger.LogMessage(`Server started on port ${program.port}...`);
         });
-        // Socket.io configuration — always use the app root as the path
-        // so the frontend path '/server/socket.io' always matches
-        // const scktio = io(expressServer, {
-        //     cors: {
-        //         origin: '*',
-        //     },
-        //     path: `${program.root}/socket.io`,
-        // });
+
         app.post(`${program.root}/mgy-track-containers`, async (request, response) => {
-            customLogger.info(`Magaya endpoints:started mgy-track-containers.`);
+            logger.info(`Magaya endpoints:started mgy-track-containers.`);
             let guidList = request.body.operations.join(';');
-            customLogger.info(`Track GUID List: ${guidList}`);
+            logger.info(`Track GUID List: ${guidList}`);
 
             const root = program.root.split('/').join('||');
             const uiUrl = `${program.root}/index.html#/containers/network/${program.networkId}/port/${program.port}/root/${root}/doRequest/${guidList}`;
-            customLogger.info(`Redirect to : ${uiUrl}`);
+            logger.info(`Redirect to : ${uiUrl}`);
             response.redirect(uiUrl);
         });
+
+        // 6. Post-init Magaya middlewares
         app.use(expressMiddleware);
         app.use(requestorMiddleware);
-        app.use(express.json());
 
-
+        // 7. Socket.io setup
         const scktio =
             environment === 'development'
                 ? socketIo(httpServer, {
@@ -163,7 +140,7 @@ init()
                       },
                       path: `${program.root}/socket.io`,
                   });
-        // Socket.io connection handling
+
         scktio.sockets.on('connection', function (socket) {
             console.log('Client connected:', socket.id);
 
@@ -176,13 +153,16 @@ init()
             });
         });
 
-        // Middleware to access io from routes
-        app.use((req, res, next) => {
+        // 8. Expose socket.io to routes
+        app.use((req, _res, next) => {
             req.io = scktio;
             next();
         });
 
+        // 9. Application routes
         app.use(`${program.root}`, server);
+
+        // 10. Error handler — always last
         app.use(exceptionMiddleware);
     })
     .catch((er) => {
