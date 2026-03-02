@@ -25,7 +25,7 @@ program
     .option('--no-daemon', 'pm2 no daemon option')
     .parse(process.argv);
 
-const extension = { company: 'magaya', name: 'container-tracking' };
+const extension = { company: 'magaya', name: 'ai-document' };
 const extensionId = `${extension.company}-${extension.name}`;
 
 const config = require('@magaya/hyperion-extension-api-key').getApiKeyConfig(
@@ -38,7 +38,7 @@ const expressMiddleware = hyperionMiddleware.middleware(process.argv, config);
 const hyperion = hyperionMiddleware.hyperion(process.argv, config);
 
 const app = express();
-const requestorMiddleware = require('./middlewares/requestor');
+const requestorMiddleware = require('./src/middlewares/requestor');
 const logger = require('./src/logger');
 
 if (!program.port) {
@@ -93,7 +93,7 @@ init()
                 sockets(
                     {
                         server: process.env.GATEWAY_URL,
-                        app: 'container-tracking', //TODO: to be updated with the actual service name
+                        app: 'ai-document',
                         groupId: program.networkId,
                         root: `http://localhost:${program.port}${program.root}`,
                         retryStrategy: {
@@ -111,19 +111,19 @@ init()
             }
         });
         app.get(`${program.root}/mgy-open-awb`, async (request, response) => {
-            customLogger.info(`mgy-open-awb called.`);
+            logger.info(`mgy-open-awb called.`);
             const root = program.root.split('/').join('||');
 
             const finalUrl = `${program.root}/index.html#/documents/network/${program.networkId}/port/${program.port}/root/${root}/section/awb-documents`;
-            customLogger.info(`Redirect to : ${finalUrl}`);
+            logger.info(`Redirect to : ${finalUrl}`);
             response.redirect(finalUrl);
         });
         app.get(`${program.root}/mgy-open-bol`, async (request, response) => {
-            customLogger.info(`mgy-open-bol called.`);
+            logger.info(`mgy-open-bol called.`);
             const root = program.root.split('/').join('||');
 
             const finalUrl = `${program.root}/index.html#/documents/network/${program.networkId}/port/${program.port}/root/${root}/section/bol-documents`;
-            customLogger.info(`Redirect to : ${finalUrl}`);
+            logger.info(`Redirect to : ${finalUrl}`);
             response.redirect(finalUrl);
         });
 
