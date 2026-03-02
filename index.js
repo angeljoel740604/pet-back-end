@@ -7,20 +7,33 @@ const sockets = require('@magaya/socket-tunnel-node');
 
 require('dotenv').config({ path: path.join(__dirname, './.env') });
 
-const io = require('socket.io');
 const fileUpload = require('express-fileupload');
-const app = express();
-const bodyParser = require('body-parser');
 
+const hyperionMiddleware = require('@magaya/hyperion-express-middleware');
+
+const extension = { company: 'magaya', name: 'container-tracking' };
+const extensionId = `${extension.company}-${extension.name}`;
+
+const config = require('@magaya/hyperion-extension-api-key').getApiKeyConfig(
+    extension,
+    program.networkId,
+    extensionId,
+);
+
+const expressMiddleware = hyperionMiddleware.middleware(process.argv, config);
+const hyperion = hyperionMiddleware.hyperion(process.argv, config);
+
+const app = express();
+const requestorMiddleware = require('./middlewares/requestor');
+
+const bodyParser = require('body-parser');
+const environment = process.env.ENVIRONMENT || 'development';
 
 // helper for filesystem.
 
-const hyperionMiddleware = require('@magaya/hyperion-express-middleware');
 //const extensionCheckUpdates = require('@magaya/extension-check-updates');
 const packageJson = require('./package.json');
 
-const extension = { company: 'magaya', name: 'ai-document' };
-const extensionId = `${extension.company}-${extension.name}`;
 program
     .version(packageJson.version)
     .option('-p, --port <n>', 'running port', parseInt)
@@ -32,14 +45,7 @@ program
     .option('--no-daemon', 'pm2 no daemon option')
     .parse(process.argv);
 
-
 // const connInitEventHandler = require("./src/setup/wf-events-handler");
-const config = require('@magaya/hyperion-extension-api-key').getApiKeyConfig(
-    extension,
-    program.networkId,
-    extensionId,
-);
-
 
 const logger = require('./src/logger');
 
@@ -54,18 +60,15 @@ if (!program.port) {
 //const extensionCheckUpdatesMiddleware = extensionCheckUpdates.middleware(extension, program.networkId);
 // const extensionCheckUpdatesRouter = extensionCheckUpdates.router;
 
-const middleware = hyperionMiddleware.middleware(process.argv, config);
-// const hyperion = hyperionMiddleware.hyperion(process.argv, config);
 
 const contextInitMiddleware = require('./src/middlewares/context-init.middleware');
 const exceptionMiddleware = require('./src/middlewares/exceptions.middleware');
 
 // apply the middleware in the application.
-app.use(middleware);
+app.use(hyperion);
 app.use(contextInitMiddleware);
 
 // apply other helper middlewares.
-app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors({ origin: '*', optionsSuccessStatus: 200 }));
 
@@ -95,9 +98,7 @@ init()
         //app.use(extensionCheckUpdatesMiddleware);
         // app.use(`${program.root}/versioninfo`, extensionCheckUpdatesRouter);
         // start your application in the port specified.
-        const expressServer = app.listen(program.port, async () => {
-         
-
+        const httpServer = app.listen(program.port, async () => {
             if (!program.gateway) {
                 //  stateHelper.started();
                 //logger.info(`Server started on port ${program.port}...`);
@@ -105,8 +106,8 @@ init()
             } else {
                 sockets(
                     {
-                        server: 'https://appgw.magaya.net',
-                        app: 'ai-document',
+                        server: process.env.GATEWAY_URL,
+                        app: 'container-tracking', //TODO: to be updated with the actual service name
                         groupId: program.networkId,
                         root: `http://localhost:${program.port}${program.root}`,
                         retryStrategy: {
@@ -128,13 +129,40 @@ init()
         });
         // Socket.io configuration — always use the app root as the path
         // so the frontend path '/server/socket.io' always matches
-        const scktio = io(expressServer, {
-            cors: {
-                origin: '*',
-            },
-            path: `${program.root}/socket.io`,
-        });
+        // const scktio = io(expressServer, {
+        //     cors: {
+        //         origin: '*',
+        //     },
+        //     path: `${program.root}/socket.io`,
+        // });
+        app.post(`${program.root}/mgy-track-containers`, async (request, response) => {
+            customLogger.info(`Magaya endpoints:started mgy-track-containers.`);
+            let guidList = request.body.operations.join(';');
+            customLogger.info(`Track GUID List: ${guidList}`);
 
+            const root = program.root.split('/').join('||');
+            const uiUrl = `${program.root}/index.html#/containers/network/${program.networkId}/port/${program.port}/root/${root}/doRequest/${guidList}`;
+            customLogger.info(`Redirect to : ${uiUrl}`);
+            response.redirect(uiUrl);
+        });
+        app.use(expressMiddleware);
+        app.use(requestorMiddleware);
+        app.use(express.json());
+
+
+        const scktio =
+            environment === 'development'
+                ? socketIo(httpServer, {
+                      cors: {
+                          origin: '*',
+                      },
+                  })
+                : socketIo(httpServer, {
+                      cors: {
+                          origin: '*',
+                      },
+                      path: `${program.root}/socket.io`,
+                  });
         // Socket.io connection handling
         scktio.sockets.on('connection', function (socket) {
             console.log('Client connected:', socket.id);
