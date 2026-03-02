@@ -110,14 +110,30 @@ init()
                 );
             }
         });
+        app.get(`${program.root}/mgy-open-awb`, async (request, response) => {
+            customLogger.info(`mgy-open-awb called.`);
+            const root = program.root.split('/').join('||');
 
-        app.post(`${program.root}/mgy-track-containers`, async (request, response) => {
-            logger.info(`Magaya endpoints:started mgy-track-containers.`);
+            const finalUrl = `${program.root}/index.html#/documents/network/${program.networkId}/port/${program.port}/root/${root}/section/awb-documents`;
+            customLogger.info(`Redirect to : ${finalUrl}`);
+            response.redirect(finalUrl);
+        });
+        app.get(`${program.root}/mgy-open-bol`, async (request, response) => {
+            customLogger.info(`mgy-open-bol called.`);
+            const root = program.root.split('/').join('||');
+
+            const finalUrl = `${program.root}/index.html#/documents/network/${program.networkId}/port/${program.port}/root/${root}/section/bol-documents`;
+            customLogger.info(`Redirect to : ${finalUrl}`);
+            response.redirect(finalUrl);
+        });
+
+        app.post(`${program.root}/ai-update-trans`, async (request, response) => {
+            logger.info(`Magaya endpoints:started ai-update-trans.`);
             let guidList = request.body.operations.join(';');
             logger.info(`Track GUID List: ${guidList}`);
 
             const root = program.root.split('/').join('||');
-            const uiUrl = `${program.root}/index.html#/containers/network/${program.networkId}/port/${program.port}/root/${root}/doRequest/${guidList}`;
+            const uiUrl = `${program.root}/index.html#/documents/network/${program.networkId}/port/${program.port}/root/${root}/transIds/${guidList}`;
             logger.info(`Redirect to : ${uiUrl}`);
             response.redirect(uiUrl);
         });
