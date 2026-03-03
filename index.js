@@ -25,7 +25,7 @@ program
     .option('--no-daemon', 'pm2 no daemon option')
     .parse(process.argv);
 
-const extension = { company: 'magaya', name: 'ai-document' };
+const extension = { company: 'magaya', name: 'container-tracking' };
 const extensionId = `${extension.company}-${extension.name}`;
 
 const config = require('@magaya/hyperion-extension-api-key').getApiKeyConfig(
