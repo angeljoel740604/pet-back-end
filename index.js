@@ -7,8 +7,7 @@ const sockets = require('@magaya/socket-tunnel-node');
 
 require('dotenv').config({ path: path.join(__dirname, './.env') });
 
-const fileUpload = require('express-fileupload');
-const hyperionMiddleware = require('@magaya/hyperion-express-middleware');
+
 const packageJson = require('./package.json');
 
 const environment = process.env.ENVIRONMENT || 'development';
@@ -34,8 +33,11 @@ const config = require('@magaya/hyperion-extension-api-key').getApiKeyConfig(
     extensionId,
 );
 
+const fileUpload = require('express-fileupload');
+
+const hyperionMiddleware = require('@magaya/hyperion-express-middleware');
+
 const expressMiddleware = hyperionMiddleware.middleware(process.argv, config);
-const hyperion = hyperionMiddleware.hyperion(process.argv, config);
 
 const app = express();
 const requestorMiddleware = require('./src/middlewares/requestor');
@@ -62,8 +64,8 @@ app.use(express.urlencoded({ extended: false }));
 // 3. File uploads
 app.use(fileUpload());
 
-// 4. Magaya platform middleware
-app.use(hyperion);
+// 4. Magaya platform middleware — populates request.api, request.dbx, request.dbw
+app.use(expressMiddleware);
 app.use(contextInitMiddleware);
 
 // 5. Static files
@@ -139,7 +141,6 @@ init()
         });
 
         // 6. Post-init Magaya middlewares
-        app.use(expressMiddleware);
         app.use(requestorMiddleware);
 
         // 7. Socket.io setup

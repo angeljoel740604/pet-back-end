@@ -1,5 +1,6 @@
 const axios = require('axios');
 const logger = require('../logger');
+const globalContext = require('../global-context');
 
 /**
  * Service for interacting with the Air Manifest Azure Functions.
@@ -14,6 +15,7 @@ module.exports = {
     try {
       const azureFunctionUrl = process.env.AZURE_FUNCTION_GET_AIR_MANIFEST_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_GET_AIR_MANIFEST_URL not configured');
@@ -22,7 +24,8 @@ module.exports = {
       const response = await axios.get(azureFunctionUrl, {
         params: { id },
         headers: {
-          'x-functions-key': apiKey || ''
+          'x-functions-key': apiKey || '',
+          Authorization: `Bearer ${token}`
         },
         timeout: 30000
       });
@@ -54,6 +57,7 @@ module.exports = {
     try {
       const azureFunctionUrl = process.env.AZURE_FUNCTION_UPDATE_AIR_MANIFEST_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_UPDATE_AIR_MANIFEST_URL not configured');
@@ -64,7 +68,8 @@ module.exports = {
         {
           headers: {
             'Content-Type': 'application/json',
-            'x-functions-key': apiKey || ''
+            'x-functions-key': apiKey || '',
+            Authorization: `Bearer ${token}`
           },
           timeout: 30000
         }
@@ -93,6 +98,7 @@ module.exports = {
     try {
       const azureFunctionUrl = process.env.AZURE_FUNCTION_GET_MANIFESTS_BY_PARTITION_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_GET_MANIFESTS_BY_PARTITION_URL not configured');
@@ -101,7 +107,8 @@ module.exports = {
       const response = await axios.get(azureFunctionUrl, {
         params: { partitionKey },
         headers: {
-          'x-functions-key': apiKey || ''
+          'x-functions-key': apiKey || '',
+          Authorization: `Bearer ${token}`
         },
         timeout: 30000
       });
@@ -129,6 +136,7 @@ module.exports = {
     try {
       const azureFunctionUrl = process.env.AZURE_FUNCTION_DELETE_AIR_MANIFEST_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_DELETE_AIR_MANIFEST_URL not configured');
@@ -137,7 +145,8 @@ module.exports = {
       const response = await axios.delete(azureFunctionUrl, {
         params: { id },
         headers: {
-          'x-functions-key': apiKey || ''
+          'x-functions-key': apiKey || '',
+          Authorization: `Bearer ${token}`
         },
         timeout: 30000
       });
@@ -169,6 +178,7 @@ module.exports = {
     try {
       const azureFunctionUrl = process.env.AZURE_FUNCTION_UPLOAD_AIR_MANIFEST_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_UPLOAD_AIR_MANIFEST_URL not configured');
@@ -188,7 +198,8 @@ module.exports = {
           {
             headers: {
               'Content-Type': 'application/json',
-              'x-functions-key': apiKey || ''
+              'x-functions-key': apiKey || '',
+              Authorization: `Bearer ${token}`
             },
             timeout: 60000
           }
@@ -202,7 +213,8 @@ module.exports = {
         response = await axios.post(azureFunctionUrl, formData, {
           headers: {
             ...formData.getHeaders(),
-            'x-functions-key': apiKey || ''
+            'x-functions-key': apiKey || '',
+            Authorization: `Bearer ${token}`
           },
           timeout: 60000
         });
@@ -231,6 +243,7 @@ module.exports = {
     try {
       const azureFunctionUrl = process.env.AZURE_FUNCTION_CREATE_SHIPMENT_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_CREATE_SHIPMENT_URL not configured');
@@ -241,7 +254,8 @@ module.exports = {
         {
           headers: {
             'Content-Type': 'application/json',
-            'x-functions-key': apiKey || ''
+            'x-functions-key': apiKey || '',
+            Authorization: `Bearer ${token}`
           },
           timeout: 60000
         }

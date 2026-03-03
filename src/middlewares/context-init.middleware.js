@@ -3,8 +3,8 @@ const logger = require('../logger');
 
 const contextInitMiddleware = async (request, res, next) => {
     try {
-        //const token = await request.api.getAccessToken();
-        const token = '1223';
+        const token = await request.api.getAccessToken();
+        //const token = '1223';
         globalContext.initContext(
             { dbx: request.dbx, dbw: request.dbw, algorithm: request.algorithm },
             token,

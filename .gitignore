@@ -1,5 +1,5 @@
 node_modules/
-extensions-data/
+extensions-data*/
 extension.config.json
 src/static
 static

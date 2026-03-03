@@ -1,5 +1,6 @@
 const axios = require('axios');
 const logger = require('../logger');
+const globalContext = require('../global-context');
 
 /**
  * Servicio para interactuar con las Azure Functions del Bill of Lading
@@ -14,6 +15,7 @@ module.exports = {
     try {
       const azureFunctionUrl = process.env.AZURE_FUNCTION_GET_BOL_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_GET_BOL_URL not configured');
@@ -21,7 +23,7 @@ module.exports = {
 
       const response = await axios.get(azureFunctionUrl, {
         params: { id },
-        headers: { 'x-functions-key': apiKey || '' },
+        headers: { 'x-functions-key': apiKey || '', Authorization: `Bearer ${token}` },
         timeout: 30000
       });
 
@@ -49,6 +51,7 @@ module.exports = {
     try {
       const azureFunctionUrl = process.env.AZURE_FUNCTION_UPDATE_BOL_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_UPDATE_BOL_URL not configured');
@@ -60,7 +63,8 @@ module.exports = {
         {
           headers: {
             'Content-Type': 'application/json',
-            'x-functions-key': apiKey || ''
+            'x-functions-key': apiKey || '',
+            Authorization: `Bearer ${token}`
           },
           timeout: 30000
         }
@@ -89,6 +93,7 @@ module.exports = {
     try {
       const azureFunctionUrl = process.env.AZURE_FUNCTION_GET_BOLS_BY_PARTITION_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_GET_BOLS_BY_PARTITION_URL not configured');
@@ -96,7 +101,7 @@ module.exports = {
 
       const response = await axios.get(azureFunctionUrl, {
         params: { partitionKey },
-        headers: { 'x-functions-key': apiKey || '' },
+        headers: { 'x-functions-key': apiKey || '', Authorization: `Bearer ${token}` },
         timeout: 30000
       });
 
@@ -123,6 +128,7 @@ module.exports = {
     try {
       const azureFunctionUrl = process.env.AZURE_FUNCTION_DELETE_BOL_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_DELETE_BOL_URL not configured');
@@ -130,7 +136,7 @@ module.exports = {
 
       const response = await axios.delete(azureFunctionUrl, {
         params: { id },
-        headers: { 'x-functions-key': apiKey || '' },
+        headers: { 'x-functions-key': apiKey || '', Authorization: `Bearer ${token}` },
         timeout: 30000
       });
 
@@ -159,6 +165,7 @@ module.exports = {
       const FormData = require('form-data');
       const azureFunctionUrl = process.env.AZURE_FUNCTION_UPLOAD_BOL_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_UPLOAD_BOL_URL not configured');
@@ -170,7 +177,8 @@ module.exports = {
       const response = await axios.post(azureFunctionUrl, formData, {
         headers: {
           ...formData.getHeaders(),
-          'x-functions-key': apiKey || ''
+          'x-functions-key': apiKey || '',
+          Authorization: `Bearer ${token}`
         },
         timeout: 60000
       });
@@ -198,6 +206,7 @@ module.exports = {
     try {
       const azureFunctionUrl = process.env.AZURE_FUNCTION_CREATE_BOL_SHIPMENT_URL;
       const apiKey = process.env.AZURE_FUNCTION_API_KEY;
+      const token = globalContext.getContext().apiToken;
 
       if (!azureFunctionUrl) {
         throw new Error('AZURE_FUNCTION_CREATE_BOL_SHIPMENT_URL not configured');
@@ -209,7 +218,8 @@ module.exports = {
         {
           headers: {
             'Content-Type': 'application/json',
-            'x-functions-key': apiKey || ''
+            'x-functions-key': apiKey || '',
+            Authorization: `Bearer ${token}`
           },
           timeout: 60000
         }
