@@ -115,8 +115,9 @@ init()
         app.get(`${program.root}/mgy-open-awb`, async (request, response) => {
             logger.info(`mgy-open-awb called.`);
             const root = program.root.split('/').join('||');
-
+            //http://localhost:5173/
             const finalUrl = `${program.root}/index.html#/documents/network/${program.networkId}/port/${program.port}/root/${root}/section/awb-documents`;
+            const testUrl = `http://localhost:5173/ext/magaya/ai-documents/index.html#/documents/network/33087/port/8100/root/||server/section/awb-documents`;
             logger.info(`Redirect to : ${finalUrl}`);
             response.redirect(finalUrl);
         });
@@ -125,6 +126,7 @@ init()
             const root = program.root.split('/').join('||');
 
             const finalUrl = `${program.root}/index.html#/documents/network/${program.networkId}/port/${program.port}/root/${root}/section/bol-documents`;
+            const testUrl = `http://localhost:5173/ext/magaya/ai-documents/index.html#/documents/network/33087/port/8100/root/||server/section/bol-documents`;
             logger.info(`Redirect to : ${finalUrl}`);
             response.redirect(finalUrl);
         });
